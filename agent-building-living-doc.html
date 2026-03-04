@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Building Concepts — Living Document</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --accent: #7c6af7;
+    --accent2: #3ecfb0;
+    --accent3: #f7a26a;
+    --red: #f76a6a;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .topbar-title {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .topbar-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: rgba(124,106,247,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(124,106,247,0.3);
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .topbar-sep { flex: 1; }
+  .topbar-section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* LAYOUT */
+  .layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .sidebar-scroll {
+    overflow-y: auto;
+    flex: 1;
+    padding: 16px 0;
+  }
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .nav-group { margin-bottom: 8px; }
+  .nav-group-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 20px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    line-height: 1.3;
+  }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+  .nav-item.active {
+    color: var(--text);
+    border-left-color: var(--accent);
+    background: rgba(124,106,247,0.07);
+  }
+  .nav-item .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .nav-item.active .dot { background: var(--accent); }
+  .nav-item:hover .dot { background: var(--muted); }
+
+  /* CONTENT */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 40px 48px;
+  }
+  .content::-webkit-scrollbar { width: 4px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .section { display: none; animation: fadeIn 0.25s ease; }
+  .section.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  .section-lead {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: rgba(232,232,240,0.7);
+    margin-bottom: 32px;
+    max-width: 580px;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 32px 0;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: rgba(232,232,240,0.7);
+    margin-bottom: 16px;
+  }
+
+  .callout {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+  .callout.green { border-left-color: var(--accent2); }
+  .callout.orange { border-left-color: var(--accent3); }
+  .callout.red { border-left-color: var(--red); }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .callout p { margin-bottom: 0; font-size: 13px; }
+
+  .concept-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .concept-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .concept-card:hover {
+    border-color: rgba(124,106,247,0.4);
+    background: rgba(124,106,247,0.05);
+  }
+  .concept-card.highlight-green { border-color: rgba(62,207,176,0.3); }
+  .concept-card.highlight-orange { border-color: rgba(247,162,106,0.3); }
+  .concept-card-icon { font-size: 20px; margin-bottom: 10px; }
+  .concept-card-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .concept-card-desc {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .tag.purple { border-color: rgba(124,106,247,0.4); color: var(--accent); background: rgba(124,106,247,0.08); }
+  .tag.green { border-color: rgba(62,207,176,0.4); color: var(--accent2); background: rgba(62,207,176,0.08); }
+  .tag.orange { border-color: rgba(247,162,106,0.4); color: var(--accent3); background: rgba(247,162,106,0.08); }
+
+  .flow-diagram {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    margin-bottom: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .flow-node {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .flow-node.trigger { background: rgba(124,106,247,0.2); border: 1px solid rgba(124,106,247,0.4); color: var(--accent); }
+  .flow-node.action { background: rgba(62,207,176,0.15); border: 1px solid rgba(62,207,176,0.3); color: var(--accent2); }
+  .flow-node.decision { background: rgba(247,162,106,0.15); border: 1px solid rgba(247,162,106,0.3); color: var(--accent3); }
+  .flow-node.output { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); }
+  .flow-arrow { color: var(--muted); flex-shrink: 0; }
+
+  .compare-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  .compare-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table td {
+    font-size: 13px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: rgba(232,232,240,0.75);
+    vertical-align: top;
+  }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .compare-table .label-col { font-weight: 500; color: var(--text); font-family: var(--mono); font-size: 11px; }
+
+  /* DEMO PANEL */
+  .demo-panel {
+    width: 360px;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .demo-panel-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .demo-panel-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    flex: 1;
+  }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--accent2);
+    letter-spacing: 0.08em;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--accent2);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .demo-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .demo-scroll::-webkit-scrollbar { width: 3px; }
+  .demo-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* Agent Canvas Demo */
+  .demo-view { display: none; animation: fadeIn 0.3s ease; }
+  .demo-view.active { display: block; }
+
+  .agent-canvas {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .canvas-toolbar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .canvas-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .canvas-btn:hover, .canvas-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(124,106,247,0.1);
+  }
+  .canvas-sep { flex: 1; }
+
+  /* Node styles */
+  .node-board {
+    padding: 16px;
+    min-height: 280px;
+    position: relative;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .node-block {
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .node-block:hover { border-color: rgba(124,106,247,0.5); }
+  .node-header {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .node-header-icon { font-size: 13px; }
+  .node-type-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-left: auto;
+  }
+  .node-body {
+    padding: 8px 12px 10px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .node-trigger .node-header { background: rgba(124,106,247,0.12); }
+  .node-trigger { border-color: rgba(124,106,247,0.25); }
+  .node-trigger .node-header-label { color: #a99af9; }
+
+  .node-action .node-header { background: rgba(62,207,176,0.08); }
+  .node-action { border-color: rgba(62,207,176,0.2); }
+  .node-action .node-header-label { color: #6dd9c6; }
+
+  .node-condition .node-header { background: rgba(247,162,106,0.08); }
+  .node-condition { border-color: rgba(247,162,106,0.2); }
+  .node-condition .node-header-label { color: #f9c08a; }
+
+  .node-output .node-header { background: rgba(255,255,255,0.04); }
+  .node-output { border-color: rgba(255,255,255,0.1); }
+
+  .connector {
+    display: flex;
+    align-items: center;
+    padding: 2px 20px;
+    color: var(--muted);
+    font-size: 10px;
+    gap: 6px;
+  }
+  .connector-line {
+    width: 1px;
+    height: 14px;
+    background: var(--border);
+    margin-left: 19px;
+  }
+
+  /* Chat simulation */
+  .chat-sim {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .chat-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .agent-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .agent-name { font-size: 12px; font-weight: 500; }
+  .agent-status { font-size: 10px; color: var(--accent2); font-family: var(--mono); margin-left: auto; }
+
+  .chat-messages {
+    padding: 12px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .msg {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .msg.user {
+    background: rgba(124,106,247,0.2);
+    border: 1px solid rgba(124,106,247,0.3);
+    margin-left: auto;
+    border-radius: 10px 10px 3px 10px;
+    color: #c4bcff;
+  }
+  .msg.agent {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px 10px 10px 3px;
+    color: var(--text);
+  }
+  .msg.system {
+    background: rgba(62,207,176,0.08);
+    border: 1px solid rgba(62,207,176,0.2);
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 10px;
+    align-self: center;
+    border-radius: 4px;
+    max-width: 95%;
+    text-align: center;
+  }
+  .typing {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px 10px 10px 3px;
+    width: fit-content;
+  }
+  .typing span {
+    width: 5px; height: 5px;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* Memory viz */
+  .memory-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .memory-cell {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .memory-cell-key {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .memory-cell-val {
+    font-size: 12px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .memory-cell.active { border-color: rgba(62,207,176,0.4); }
+  .memory-cell.active .memory-cell-key { color: var(--accent2); }
+
+  /* Tool list */
+  .tool-list { display: flex; flex-direction: column; gap: 6px; }
+  .tool-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tool-icon { font-size: 16px; }
+  .tool-name { font-size: 12px; font-weight: 500; flex: 1; }
+  .tool-permission {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 7px;
+    border-radius: 3px;
+  }
+  .tool-permission.read { background: rgba(62,207,176,0.1); color: var(--accent2); border: 1px solid rgba(62,207,176,0.2); }
+  .tool-permission.write { background: rgba(247,162,106,0.1); color: var(--accent3); border: 1px solid rgba(247,162,106,0.2); }
+  .tool-permission.exec { background: rgba(247,106,106,0.1); color: var(--red); border: 1px solid rgba(247,106,106,0.2); }
+
+  /* Guardrails */
+  .guard-list { display: flex; flex-direction: column; gap: 6px; }
+  .guard-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .guard-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .guard-status.on { background: var(--accent2); }
+  .guard-status.warn { background: var(--accent3); }
+  .guard-status.off { background: var(--red); }
+  .guard-text { font-size: 12px; line-height: 1.4; }
+  .guard-label { font-weight: 500; color: var(--text); }
+  .guard-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Annotation */
+  .annotation {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgba(124,106,247,0.05);
+    border: 1px solid rgba(124,106,247,0.15);
+    border-radius: 6px;
+    font-size: 12px;
+    color: rgba(232,232,240,0.6);
+    line-height: 1.6;
+  }
+  .annotation strong { color: var(--accent); font-weight: 500; }
+
+  .demo-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">Agent Building</span>
+  <span class="topbar-badge">Living Document</span>
+  <span class="topbar-sep"></span>
+  <span class="topbar-section-label" id="topbar-section">Introduction</span>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-scroll">
+
+      <div class="nav-group">
+        <div class="nav-group-label">Overview</div>
+        <div class="nav-item active" data-section="intro" data-demo="demo-intro">
+          <span class="dot"></span>What is an Agent?
+        </div>
+        <div class="nav-item" data-section="automation-vs-agent" data-demo="demo-chat">
+          <span class="dot"></span>Automation vs. Agent
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Core Concepts</div>
+        <div class="nav-item" data-section="anatomy" data-demo="demo-anatomy">
+          <span class="dot"></span>Anatomy of an Agent
+        </div>
+        <div class="nav-item" data-section="tools" data-demo="demo-tools">
+          <span class="dot"></span>Tools & Actions
+        </div>
+        <div class="nav-item" data-section="memory" data-demo="demo-memory">
+          <span class="dot"></span>Memory & Context
+        </div>
+        <div class="nav-item" data-section="reasoning" data-demo="demo-reasoning">
+          <span class="dot"></span>Reasoning & Planning
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Design Decisions</div>
+        <div class="nav-item" data-section="autonomy" data-demo="demo-guardrails">
+          <span class="dot"></span>Autonomy & Guardrails
+        </div>
+        <div class="nav-item" data-section="triggers" data-demo="demo-triggers">
+          <span class="dot"></span>Triggers & Flows
+        </div>
+        <div class="nav-item" data-section="patterns" data-demo="demo-anatomy">
+          <span class="dot"></span>Common Patterns
+        </div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">HubSpot Context</div>
+        <div class="nav-item" data-section="breeze" data-demo="demo-chat">
+          <span class="dot"></span>Breeze Studio Concepts
+        </div>
+        <div class="nav-item" data-section="smb-trust" data-demo="demo-guardrails">
+          <span class="dot"></span>SMB Trust Signals
+        </div>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="content" id="main-content">
+
+    <!-- INTRO -->
+    <div class="section active" id="section-intro">
+      <div class="section-eyebrow">01 — Overview</div>
+      <div class="section-title">What is an Agent?</div>
+      <div class="section-lead">An agent is software that perceives its environment, makes decisions, takes actions, and pursues goals — with varying degrees of autonomy and without step-by-step human instruction.</div>
+
+      <div class="concept-grid">
+        <div class="concept-card" onclick="navigate('anatomy', 'demo-anatomy')">
+          <div class="concept-card-icon">🧠</div>
+          <div class="concept-card-title">Perceive</div>
+          <div class="concept-card-desc">Receives inputs: messages, data, events, tool results</div>
+        </div>
+        <div class="concept-card highlight-green" onclick="navigate('reasoning', 'demo-reasoning')">
+          <div class="concept-card-icon">💭</div>
+          <div class="concept-card-title">Reason</div>
+          <div class="concept-card-desc">Decides what to do next, evaluates options, plans steps</div>
+        </div>
+        <div class="concept-card highlight-orange" onclick="navigate('tools', 'demo-tools')">
+          <div class="concept-card-icon">⚡</div>
+          <div class="concept-card-title">Act</div>
+          <div class="concept-card-desc">Calls tools, sends messages, updates records, triggers workflows</div>
+        </div>
+        <div class="concept-card" onclick="navigate('memory', 'demo-memory')">
+          <div class="concept-card-icon">📦</div>
+          <div class="concept-card-title">Remember</div>
+          <div class="concept-card-desc">Retains context across turns, sessions, or tasks</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">Key distinction</div>
+        <p>Traditional software follows <strong>fixed paths</strong>. Agents follow <strong>goals</strong>. The same agent can handle a refund request, a product question, and a booking — without separate code for each.</p>
+      </div>
+
+      <hr class="divider">
+      <h3>Why this matters for product</h3>
+      <p>Agents shift the design problem. Instead of designing screens and flows, you're designing goals, constraints, personality, and the surface where the agent acts. The UX challenge moves from "what does the user tap?" to "what does the agent decide, and can users trust it?"</p>
+    </div>
+
+    <!-- AUTOMATION VS AGENT -->
+    <div class="section" id="section-automation-vs-agent">
+      <div class="section-eyebrow">01b — Overview</div>
+      <div class="section-title">Automation vs. Agent</div>
+      <div class="section-lead">The distinction isn't just technical — it's a fundamentally different design contract with users about who is in control and what the system will do next.</div>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Automation / Workflow</th>
+            <th>Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-col">Goal-setting</td>
+            <td>Set by builder at design time</td>
+            <td>Interpreted from user intent at runtime</td>
+          </tr>
+          <tr>
+            <td class="label-col">Path</td>
+            <td>Predefined, branching</td>
+            <td>Emergent, decided step by step</td>
+          </tr>
+          <tr>
+            <td class="label-col">Handles unknown inputs</td>
+            <td>Falls back / errors</td>
+            <td>Attempts to handle or asks for clarification</td>
+          </tr>
+          <tr>
+            <td class="label-col">Builder models</td>
+            <td>Every case explicitly</td>
+            <td>Goal + constraints, agent infers cases</td>
+          </tr>
+          <tr>
+            <td class="label-col">User trust required</td>
+            <td>Low — predictable outcome</td>
+            <td>Higher — outcome varies by reasoning</td>
+          </tr>
+          <tr>
+            <td class="label-col">Best for</td>
+            <td>Repetitive, well-defined tasks</td>
+            <td>Varied, nuanced, context-dependent tasks</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout orange">
+        <div class="callout-label">Design implication</div>
+        <p>Most real products blend both. Use automation where outcomes must be exact and auditable (billing, GDPR requests). Use agents where user needs are varied and language is the input (support, onboarding, research).</p>
+      </div>
+    </div>
+
+    <!-- ANATOMY -->
+    <div class="section" id="section-anatomy">
+      <div class="section-eyebrow">02 — Core Concepts</div>
+      <div class="section-title">Anatomy of an Agent</div>
+      <div class="section-lead">Every agent is built from a small set of components. How you configure them determines behaviour, capability, and risk.</div>
+
+      <h3>The five components</h3>
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-card-icon">📋</div>
+          <div class="concept-card-title">System Prompt</div>
+          <div class="concept-card-desc">Defines the agent's identity, goals, tone, and hard constraints. This is the agent's "job spec".</div>
+        </div>
+        <div class="concept-card highlight-green">
+          <div class="concept-card-icon">🔧</div>
+          <div class="concept-card-title">Tools</div>
+          <div class="concept-card-desc">Functions the agent can call: search, CRM lookup, send email, create record.</div>
+        </div>
+        <div class="concept-card highlight-orange">
+          <div class="concept-card-icon">🗃️</div>
+          <div class="concept-card-title">Memory</div>
+          <div class="concept-card-desc">What the agent retains — from conversation history to external knowledge stores.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-card-icon">⚙️</div>
+          <div class="concept-card-title">Model</div>
+          <div class="concept-card-desc">The underlying LLM doing the reasoning. Capability and cost vary by choice.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-card-icon">🛡️</div>
+          <div class="concept-card-title">Guardrails</div>
+          <div class="concept-card-desc">The rules that override model decisions — refusals, human escalation, confidence thresholds.</div>
+        </div>
+        <div class="concept-card highlight-green">
+          <div class="concept-card-icon">🎯</div>
+          <div class="concept-card-title">Trigger / Entry</div>
+          <div class="concept-card-desc">What activates the agent: a message, an event, a schedule, or an external webhook.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="section" id="section-tools">
+      <div class="section-eyebrow">02b — Core Concepts</div>
+      <div class="section-title">Tools & Actions</div>
+      <div class="section-lead">Tools are what give agents real-world effect. Without tools, an agent can only produce text. With tools, it can read CRM data, send emails, create tickets, and update records.</div>
+
+      <h3>Tool permission levels</h3>
+      <p>The most important design decision around tools is not which ones to add — it's what permission level each carries. This directly maps to how much risk you're accepting.</p>
+
+      <div class="tag-row">
+        <span class="tag green">READ — Safe</span>
+        <span class="tag orange">WRITE — Requires confirmation</span>
+        <span class="tag" style="border-color:rgba(247,106,106,0.4);color:var(--red);background:rgba(247,106,106,0.08)">EXECUTE — High risk, gate carefully</span>
+      </div>
+
+      <div class="callout green">
+        <div class="callout-label">Design principle</div>
+        <p>Give agents the least privileged set of tools that still lets them complete the goal. Write permissions should require a confidence threshold or explicit user confirmation before executing.</p>
+      </div>
+
+      <hr class="divider">
+      <h3>Tool call anatomy</h3>
+      <p>When a model decides to use a tool, it generates a structured call: a function name, typed parameters, and the expected return shape. The result feeds back into the model's context before it continues reasoning.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <span class="flow-node trigger">User message</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node action">Model reasoning</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node decision">Tool call decision</span>
+        </div>
+        <div class="flow-row" style="padding-left: 40px;">
+          <span class="flow-arrow">↓</span>
+        </div>
+        <div class="flow-row">
+          <span class="flow-node output">Tool executes</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node action">Result injected into context</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node output">Model continues</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMORY -->
+    <div class="section" id="section-memory">
+      <div class="section-eyebrow">02c — Core Concepts</div>
+      <div class="section-title">Memory & Context</div>
+      <div class="section-lead">Memory determines whether an agent feels continuous and aware, or stateless and forgetful. There are four distinct types — each with different UX and cost implications.</div>
+
+      <table class="compare-table">
+        <thead>
+          <tr><th>Type</th><th>What it is</th><th>Persists across?</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label-col">In-context</td>
+            <td>The current conversation window</td>
+            <td>Current session only</td>
+            <td>"Earlier you said you prefer email…"</td>
+          </tr>
+          <tr>
+            <td class="label-col">External / RAG</td>
+            <td>Retrieved from a knowledge base</td>
+            <td>Permanently</td>
+            <td>Product docs, past tickets, CRM notes</td>
+          </tr>
+          <tr>
+            <td class="label-col">Episodic</td>
+            <td>Summary of past interactions</td>
+            <td>Across sessions</td>
+            <td>"Last time, you were troubleshooting X"</td>
+          </tr>
+          <tr>
+            <td class="label-col">Procedural</td>
+            <td>Fine-tuned model weights</td>
+            <td>Permanently (baked in)</td>
+            <td>Domain expertise, brand voice</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <div class="callout-label">UX design note</div>
+        <p>Users often <em>assume</em> agents remember everything. Design for memory transparency — make it clear what the agent knows, what it's been told, and when it's guessing. This is a trust surface, not just a technical detail.</p>
+      </div>
+    </div>
+
+    <!-- REASONING -->
+    <div class="section" id="section-reasoning">
+      <div class="section-eyebrow">02d — Core Concepts</div>
+      <div class="section-title">Reasoning & Planning</div>
+      <div class="section-lead">Reasoning is what separates agents from chatbots. An agent doesn't just respond — it breaks down goals, identifies what it needs to know, sequences actions, and evaluates its own outputs.</div>
+
+      <h3>ReAct pattern (Reason + Act)</h3>
+      <p>The most common agent reasoning pattern. At each step the model produces a <em>thought</em> (what it's considering), an <em>action</em> (tool call or response), and an <em>observation</em> (what came back). It loops until the goal is met or it's stuck.</p>
+
+      <div class="flow-diagram">
+        <div class="flow-row">
+          <span class="flow-node trigger">Goal received</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node action">Think: what do I need?</span>
+        </div>
+        <div class="flow-row" style="padding-left: 40px;"><span class="flow-arrow">↓</span></div>
+        <div class="flow-row">
+          <span class="flow-node decision">Act: call tool / respond</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node action">Observe: what came back?</span>
+        </div>
+        <div class="flow-row" style="padding-left: 40px;"><span class="flow-arrow">↓</span></div>
+        <div class="flow-row">
+          <span class="flow-node decision">Goal met?</span>
+          <span class="flow-arrow">→ yes →</span>
+          <span class="flow-node output">Respond to user</span>
+        </div>
+        <div class="flow-row" style="font-size:10px; color: var(--muted); padding-left: 6px;">
+          └ no → loop back to Think
+        </div>
+      </div>
+
+      <div class="callout orange">
+        <div class="callout-label">Design risk</div>
+        <p>Reasoning loops can go wrong: an agent can get stuck, take too many steps, or pursue a subgoal that wasn't intended. Always set a max-step limit and a fallback to human handoff.</p>
+      </div>
+    </div>
+
+    <!-- AUTONOMY + GUARDRAILS -->
+    <div class="section" id="section-autonomy">
+      <div class="section-eyebrow">03 — Design Decisions</div>
+      <div class="section-title">Autonomy & Guardrails</div>
+      <div class="section-lead">The hardest design question in agent-building isn't "what can it do?" — it's "what should it do on its own, and when should it ask?" This is the autonomy dial.</div>
+
+      <h3>The autonomy spectrum</h3>
+      <div class="tag-row">
+        <span class="tag">Fully supervised</span>
+        <span class="tag">Suggest + confirm</span>
+        <span class="tag purple">Default setting for most SMBs</span>
+        <span class="tag orange">Act + notify</span>
+        <span class="tag" style="border-color:rgba(247,106,106,0.4);color:var(--red);background:rgba(247,106,106,0.08)">Fully autonomous</span>
+      </div>
+
+      <p>Most SMB customers land in the middle — they want the agent to act, but they want to know what happened and be able to undo it. Design for this by default; power users can opt into higher autonomy.</p>
+
+      <hr class="divider">
+
+      <h3>Types of guardrails</h3>
+      <p>Guardrails are not error messages — they're an intentional design layer that shapes agent behaviour:</p>
+      <div class="callout green">
+        <div class="callout-label">Hard stop</div>
+        <p>The agent must never do X, regardless of user instruction. Example: never delete a contact without explicit multi-step confirmation.</p>
+      </div>
+      <div class="callout orange">
+        <div class="callout-label">Soft limit + escalate</div>
+        <p>The agent can proceed but must surface confidence level. If below threshold, hand off to human or ask for clarification.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-label">Audit trail</div>
+        <p>The agent acts but every decision is logged with reasoning, so users can review and override after the fact.</p>
+      </div>
+    </div>
+
+    <!-- TRIGGERS -->
+    <div class="section" id="section-triggers">
+      <div class="section-eyebrow">03b — Design Decisions</div>
+      <div class="section-title">Triggers & Flows</div>
+      <div class="section-lead">Triggers are the entry points that activate an agent. The trigger type fundamentally shapes the agent's expectations, memory state, and what a "good response" looks like.</div>
+
+      <table class="compare-table">
+        <thead><tr><th>Trigger Type</th><th>Example</th><th>Agent context</th></tr></thead>
+        <tbody>
+          <tr><td class="label-col">Conversational</td><td>User sends a message</td><td>Has conversation history, responds in-thread</td></tr>
+          <tr><td class="label-col">Event-based</td><td>Contact form submitted</td><td>No history, acts on event data payload</td></tr>
+          <tr><td class="label-col">Scheduled</td><td>Daily digest at 9am</td><td>No user present, acts on stored state</td></tr>
+          <tr><td class="label-col">Tool result</td><td>API returns anomaly</td><td>Mid-flow, continues reasoning chain</td></tr>
+          <tr><td class="label-col">Human handoff</td><td>Agent escalates to human</td><td>Full context passed, human takes over</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <div class="callout-label">Flow design tip</div>
+        <p>Always design the exit condition first. What does "done" look like for this trigger? Then design the steps backward. Agents without clear exit conditions tend to over-act or spin.</p>
+      </div>
+    </div>
+
+    <!-- PATTERNS -->
+    <div class="section" id="section-patterns">
+      <div class="section-eyebrow">03c — Design Decisions</div>
+      <div class="section-title">Common Agent Patterns</div>
+      <div class="section-lead">Most real-world agents are combinations of a small set of recurring patterns. Recognising which pattern you're building helps you anticipate the UX challenges upfront.</div>
+
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-card-icon">🔁</div>
+          <div class="concept-card-title">Router Agent</div>
+          <div class="concept-card-desc">Classifies intent and hands off to specialist agents or flows. Like a smart dispatcher.</div>
+        </div>
+        <div class="concept-card highlight-green">
+          <div class="concept-card-icon">🔍</div>
+          <div class="concept-card-title">Research Agent</div>
+          <div class="concept-card-desc">Retrieves, synthesises, and summarises. Reads many sources, returns structured insight.</div>
+        </div>
+        <div class="concept-card highlight-orange">
+          <div class="concept-card-icon">✍️</div>
+          <div class="concept-card-title">Generation Agent</div>
+          <div class="concept-card-desc">Creates content: emails, summaries, campaign copy. Often uses retrieved context to personalise.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-card-icon">🤝</div>
+          <div class="concept-card-title">Conversational Agent</div>
+          <div class="concept-card-desc">Maintains dialogue over multiple turns. Handles clarification, follow-ups, and ambiguity.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-card-icon">🛠️</div>
+          <div class="concept-card-title">Execution Agent</div>
+          <div class="concept-card-desc">Takes action in systems: updates CRM, sends emails, creates tasks. Highest-stakes pattern.</div>
+        </div>
+        <div class="concept-card highlight-green">
+          <div class="concept-card-icon">👥</div>
+          <div class="concept-card-title">Multi-Agent</div>
+          <div class="concept-card-desc">Orchestrator delegates to specialised sub-agents. Handles complex, multi-step goals.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREEZE -->
+    <div class="section" id="section-breeze">
+      <div class="section-eyebrow">04 — HubSpot Context</div>
+      <div class="section-title">Breeze Studio Concepts</div>
+      <div class="section-lead">Breeze Studio is HubSpot's platform for building agents — currently positioned around customer-facing bots, internal copilots, and automated outreach. Understanding the platform shapes what patterns are feasible.</div>
+
+      <h3>Key platform constraints to design around</h3>
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-card-icon">🔗</div>
+          <div class="concept-card-title">CRM-native context</div>
+          <div class="concept-card-desc">Agents have first-class access to contact, deal, and company records. Design for this as the memory layer.</div>
+        </div>
+        <div class="concept-card highlight-orange">
+          <div class="concept-card-icon">⚡</div>
+          <div class="concept-card-title">Workflow as trigger</div>
+          <div class="concept-card-desc">Agents can be wired into existing HubSpot workflow automations — this is the hybrid automation/agent model.</div>
+        </div>
+        <div class="concept-card highlight-green">
+          <div class="concept-card-icon">🧩</div>
+          <div class="concept-card-title">Copilot surface</div>
+          <div class="concept-card-desc">Agents running in the CRM sidebar — assisting reps in real time rather than acting autonomously.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-card-icon">🏪</div>
+          <div class="concept-card-title">SMB audience</div>
+          <div class="concept-card-desc">Builders are often non-technical. Prompts, not code. Trust is earned through transparency, not power.</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <h3>Design challenge for the team</h3>
+      <p>The hardest problem in Breeze Studio UX is the builder-user gap: the person building the agent and the person using the agent are often different people with different goals, context, and risk tolerance. Design artifacts need to serve both.</p>
+    </div>
+
+    <!-- SMB TRUST -->
+    <div class="section" id="section-smb-trust">
+      <div class="section-eyebrow">04b — HubSpot Context</div>
+      <div class="section-title">SMB Trust Signals</div>
+      <div class="section-lead">Research consistently shows SMBs want AI to act, but they're risk-averse. The trust design surface is often underinvested — it's the difference between adoption and abandonment.</div>
+
+      <h3>What builds trust for SMB users</h3>
+      <div class="callout green">
+        <div class="callout-label">Explainability</div>
+        <p>Show what the agent is doing and why — even briefly. "Looked up 3 contacts matching this criteria" is more trusted than a silent result.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-label">Reversibility</div>
+        <p>If the agent took an action, make it undoable. The ability to undo is more trust-building than a confirmation prompt before the action.</p>
+      </div>
+      <div class="callout orange">
+        <div class="callout-label">Scope clarity</div>
+        <p>Users need to know what the agent can and cannot do. Unexpected capability surprises feel unsafe even when the outcome is positive.</p>
+      </div>
+      <div class="callout">
+        <div class="callout-label">Progressive autonomy</div>
+        <p>Start supervised. Let users earn trust in the agent by reviewing its decisions before granting it broader action permissions.</p>
+      </div>
+
+      <hr class="divider">
+      <p>From user research: SMB customers are more worried about the agent doing the <em>wrong thing confidently</em> than about it doing <em>nothing</em>. Design the failure mode to be visible and recoverable.</p>
+    </div>
+
+  </main>
+
+  <!-- DEMO PANEL -->
+  <aside class="demo-panel">
+    <div class="demo-panel-header">
+      <span class="demo-panel-title">Live Demo</span>
+      <span class="live-badge"><span class="live-dot"></span>SYNCED</span>
+    </div>
+    <div class="demo-scroll">
+
+      <!-- INTRO DEMO -->
+      <div class="demo-view active" id="demo-intro">
+        <div class="demo-label">What an agent looks like</div>
+        <div class="agent-canvas">
+          <div class="canvas-toolbar">
+            <button class="canvas-btn active">Agent View</button>
+            <span class="canvas-sep"></span>
+            <button class="canvas-btn">Logs</button>
+          </div>
+          <div class="node-board">
+            <div class="node-block node-trigger">
+              <div class="node-header">
+                <span class="node-header-icon">⚡</span>
+                <span class="node-header-label">Customer message received</span>
+                <span class="node-type-label">TRIGGER</span>
+              </div>
+              <div class="node-body">"I need to update my billing info"</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-action">
+              <div class="node-header">
+                <span class="node-header-icon">🔍</span>
+                <span class="node-header-label">Lookup contact record</span>
+                <span class="node-type-label">TOOL CALL</span>
+              </div>
+              <div class="node-body">CRM.getContact(email) → found</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-condition">
+              <div class="node-header">
+                <span class="node-header-icon">🤔</span>
+                <span class="node-header-label">Has billing portal access?</span>
+                <span class="node-type-label">DECISION</span>
+              </div>
+              <div class="node-body">billing.status = "active" → yes</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-output">
+              <div class="node-header">
+                <span class="node-header-icon">💬</span>
+                <span class="node-header-label">Send portal link</span>
+                <span class="node-type-label">OUTPUT</span>
+              </div>
+              <div class="node-body">Message sent with personalised billing URL</div>
+            </div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Note:</strong> The agent didn't follow a script — it looked up real data, made a decision, and acted. Same agent handles a user <em>without</em> billing access differently, without separate code.
+        </div>
+      </div>
+
+      <!-- CHAT DEMO -->
+      <div class="demo-view" id="demo-chat">
+        <div class="demo-label">Agent conversation in action</div>
+        <div class="chat-sim">
+          <div class="chat-header">
+            <div class="agent-avatar">🤖</div>
+            <div class="agent-name">Breeze Support Agent</div>
+            <div class="agent-status">● online</div>
+          </div>
+          <div class="chat-messages">
+            <div class="msg system">Session started · Contact loaded from CRM</div>
+            <div class="msg user">Hey, I can't find where to add a new contact property</div>
+            <div class="msg agent">I can help with that! Contact properties in HubSpot live in Settings → Properties. You'll want to scroll to the Contact section and hit "Create property" in the top right. Want me to walk you through the property types?</div>
+            <div class="msg user">Yeah what's the difference between single-line text and multi-line?</div>
+            <div class="msg agent">Single-line is for short values — names, job titles, IDs. Multi-line gives you a bigger input box for notes or descriptions. For things you might want to filter or segment on, single-line (or even a dropdown) usually works better.</div>
+            <div class="msg user">Got it. Can you add a "Customer tier" property for me?</div>
+            <div class="msg system">⚠️ Write action requested — confirming intent</div>
+            <div class="typing"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Note:</strong> When the user asked the agent to <em>act</em> (create a property), it paused — this is a write action guardrail. The agent distinguishes between answering and doing.
+        </div>
+      </div>
+
+      <!-- ANATOMY DEMO -->
+      <div class="demo-view" id="demo-anatomy">
+        <div class="demo-label">Agent component breakdown</div>
+        <div class="agent-canvas">
+          <div class="node-board" style="min-height:auto">
+            <div class="node-block node-trigger">
+              <div class="node-header">
+                <span class="node-header-icon">📋</span>
+                <span class="node-header-label">System Prompt</span>
+                <span class="node-type-label">IDENTITY</span>
+              </div>
+              <div class="node-body">You are a HubSpot support agent. Be concise. Never delete records. Escalate if unsure.</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-action">
+              <div class="node-header">
+                <span class="node-header-icon">🔧</span>
+                <span class="node-header-label">Tools (3 active)</span>
+                <span class="node-type-label">CAPABILITY</span>
+              </div>
+              <div class="node-body">crm.search · docs.lookup · ticket.create</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-condition">
+              <div class="node-header">
+                <span class="node-header-icon">🗃️</span>
+                <span class="node-header-label">Memory</span>
+                <span class="node-type-label">CONTEXT</span>
+              </div>
+              <div class="node-body">In-context (5 turns) + CRM record (retrieved)</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-output">
+              <div class="node-header">
+                <span class="node-header-icon">🛡️</span>
+                <span class="node-header-label">Guardrails</span>
+                <span class="node-type-label">SAFETY</span>
+              </div>
+              <div class="node-body">No delete. Confidence &lt; 0.7 → escalate. Max 5 tool calls.</div>
+            </div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Note:</strong> These five pieces define the entire agent's behaviour. The model is the engine — but the system prompt, tools, memory, and guardrails are the design.
+        </div>
+      </div>
+
+      <!-- TOOLS DEMO -->
+      <div class="demo-view" id="demo-tools">
+        <div class="demo-label">Tool permission levels</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <span class="tool-icon">🔍</span>
+            <span class="tool-name">crm.searchContacts</span>
+            <span class="tool-permission read">READ</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-icon">📄</span>
+            <span class="tool-name">docs.lookup</span>
+            <span class="tool-permission read">READ</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-icon">✉️</span>
+            <span class="tool-name">email.send</span>
+            <span class="tool-permission write">WRITE</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-icon">📝</span>
+            <span class="tool-name">crm.updateContact</span>
+            <span class="tool-permission write">WRITE</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-icon">🎫</span>
+            <span class="tool-name">ticket.create</span>
+            <span class="tool-permission write">WRITE</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-icon">🗑️</span>
+            <span class="tool-name">crm.deleteRecord</span>
+            <span class="tool-permission exec">EXEC</span>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Principle:</strong> READ tools should be freely callable. WRITE tools need a confidence check. EXEC tools like delete should require explicit user confirmation regardless of confidence.
+        </div>
+      </div>
+
+      <!-- MEMORY DEMO -->
+      <div class="demo-view" id="demo-memory">
+        <div class="demo-label">Agent memory state</div>
+        <div class="memory-grid">
+          <div class="memory-cell active">
+            <div class="memory-cell-key">Contact</div>
+            <div class="memory-cell-val">Sarah Chen</div>
+          </div>
+          <div class="memory-cell active">
+            <div class="memory-cell-key">Plan</div>
+            <div class="memory-cell-val">Marketing Hub Pro</div>
+          </div>
+          <div class="memory-cell active">
+            <div class="memory-cell-key">Open tickets</div>
+            <div class="memory-cell-val">2</div>
+          </div>
+          <div class="memory-cell">
+            <div class="memory-cell-key">Last login</div>
+            <div class="memory-cell-val">2d ago</div>
+          </div>
+          <div class="memory-cell">
+            <div class="memory-cell-key">Sentiment</div>
+            <div class="memory-cell-val">Frustrated</div>
+          </div>
+          <div class="memory-cell">
+            <div class="memory-cell-key">Turn</div>
+            <div class="memory-cell-val">3 of 10</div>
+          </div>
+        </div>
+        <div class="demo-label" style="margin-top:8px">Conversation history (in-context)</div>
+        <div class="agent-canvas" style="border-radius:6px">
+          <div class="node-board" style="min-height:auto;padding:12px;font-family:var(--sans)">
+            <div class="msg user" style="font-size:11px;padding:6px 10px;margin-bottom:6px">Why is my campaign paused?</div>
+            <div class="msg agent" style="font-size:11px;padding:6px 10px">Your daily sending limit was reached…</div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Green cells</strong> = retrieved from CRM at session start. The agent "knew" these before the conversation began — a form of external memory.
+        </div>
+      </div>
+
+      <!-- REASONING DEMO -->
+      <div class="demo-view" id="demo-reasoning">
+        <div class="demo-label">ReAct loop in progress</div>
+        <div class="agent-canvas">
+          <div class="node-board" style="min-height:auto">
+            <div class="node-block node-trigger">
+              <div class="node-header">
+                <span class="node-header-icon">💭</span>
+                <span class="node-header-label">Think</span>
+                <span class="node-type-label">STEP 1</span>
+              </div>
+              <div class="node-body">User wants refund. Need to check: order exists? Within policy? Contact verified?</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-action">
+              <div class="node-header">
+                <span class="node-header-icon">⚡</span>
+                <span class="node-header-label">Act</span>
+                <span class="node-type-label">STEP 2</span>
+              </div>
+              <div class="node-body">orders.lookup(id: "ORD-4412") → found, 8 days old</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-action">
+              <div class="node-header">
+                <span class="node-header-icon">👁️</span>
+                <span class="node-header-label">Observe</span>
+                <span class="node-type-label">STEP 3</span>
+              </div>
+              <div class="node-body">8 days &gt; 7-day policy. Refund not automatic. Escalate or explain?</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-condition">
+              <div class="node-header">
+                <span class="node-header-icon">🤔</span>
+                <span class="node-header-label">Think again</span>
+                <span class="node-type-label">STEP 4</span>
+              </div>
+              <div class="node-body">Confidence: 0.65. Below threshold → escalate to human</div>
+            </div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Note:</strong> The agent didn't just answer — it reasoned through the problem in steps, identified uncertainty, and chose to escalate rather than guess.
+        </div>
+      </div>
+
+      <!-- GUARDRAILS DEMO -->
+      <div class="demo-view" id="demo-guardrails">
+        <div class="demo-label">Active guardrails</div>
+        <div class="guard-list">
+          <div class="guard-item">
+            <div class="guard-status on"></div>
+            <div class="guard-text">
+              <div class="guard-label">No record deletion</div>
+              <div class="guard-desc">Agent cannot call any delete endpoint, even if instructed by user.</div>
+            </div>
+          </div>
+          <div class="guard-item">
+            <div class="guard-status on"></div>
+            <div class="guard-text">
+              <div class="guard-label">Confidence threshold</div>
+              <div class="guard-desc">If model confidence &lt; 0.7, escalate to human instead of responding.</div>
+            </div>
+          </div>
+          <div class="guard-item">
+            <div class="guard-status warn"></div>
+            <div class="guard-text">
+              <div class="guard-label">Write confirmation</div>
+              <div class="guard-desc">WRITE tools require user confirmation. Currently: notify only (no confirm).</div>
+            </div>
+          </div>
+          <div class="guard-item">
+            <div class="guard-status on"></div>
+            <div class="guard-text">
+              <div class="guard-label">Max tool calls: 5</div>
+              <div class="guard-desc">Prevents runaway reasoning loops. At limit, summarise and stop.</div>
+            </div>
+          </div>
+          <div class="guard-item">
+            <div class="guard-status off"></div>
+            <div class="guard-text">
+              <div class="guard-label">Audit logging</div>
+              <div class="guard-desc">Not enabled. Recommended for WRITE and EXEC actions.</div>
+            </div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Orange =</strong> partial config. <strong>Red =</strong> not enabled but recommended. Guardrails aren't just safety features — they're a trust surface for the users who manage this agent.
+        </div>
+      </div>
+
+      <!-- TRIGGERS DEMO -->
+      <div class="demo-view" id="demo-triggers">
+        <div class="demo-label">Trigger flow example</div>
+        <div class="agent-canvas">
+          <div class="node-board" style="min-height:auto">
+            <div class="node-block node-trigger">
+              <div class="node-header">
+                <span class="node-header-icon">📬</span>
+                <span class="node-header-label">Form submitted</span>
+                <span class="node-type-label">TRIGGER</span>
+              </div>
+              <div class="node-body">Contact: new lead, source: pricing page</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-action">
+              <div class="node-header">
+                <span class="node-header-icon">🔍</span>
+                <span class="node-header-label">Score lead intent</span>
+                <span class="node-type-label">REASON</span>
+              </div>
+              <div class="node-body">Read form data → classify intent → score: HIGH</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-condition">
+              <div class="node-header">
+                <span class="node-header-icon">🎯</span>
+                <span class="node-header-label">Route by score</span>
+                <span class="node-type-label">DECISION</span>
+              </div>
+              <div class="node-body">HIGH → assign to AE + personalised email<br/>LOW → nurture sequence</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-action">
+              <div class="node-header">
+                <span class="node-header-icon">✉️</span>
+                <span class="node-header-label">Send outreach</span>
+                <span class="node-type-label">ACT</span>
+              </div>
+              <div class="node-body">Generated email sent · CRM record updated</div>
+            </div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>No user present</strong> in this flow — it's event-triggered. The agent acts autonomously but every step is logged. This is where audit trails matter most.
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  const navItems = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('.section');
+  const demoViews = document.querySelectorAll('.demo-view');
+  const topbarSection = document.getElementById('topbar-section');
+
+  function navigate(sectionId, demoId) {
+    // Update nav
+    navItems.forEach(i => {
+      i.classList.toggle('active', i.dataset.section === sectionId);
+    });
+
+    // Update content
+    sections.forEach(s => s.classList.toggle('active', s.id === 'section-' + sectionId));
+
+    // Update demo
+    demoViews.forEach(d => d.classList.toggle('active', d.id === demoId));
+
+    // Update topbar label
+    const activeNav = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
+    if (activeNav) {
+      topbarSection.textContent = activeNav.textContent.trim();
+    }
+  }
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      navigate(item.dataset.section, item.dataset.demo);
+    });
+  });
+
+  // Concept cards
+  document.querySelectorAll('.concept-card[onclick]').forEach(card => {
+    // already handled via onclick
+  });
+</script>
+
+</body>
+</html>
