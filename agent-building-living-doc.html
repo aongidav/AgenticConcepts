@@ -715,8 +715,14 @@
 
       <div class="nav-group">
         <div class="nav-group-label">HubSpot Context</div>
-        <div class="nav-item" data-section="breeze" data-demo="demo-chat">
-          <span class="dot"></span>Breeze Studio Concepts
+        <div class="nav-item" data-section="breeze" data-demo="demo-breeze">
+          <span class="dot"></span>Agent Builder Model
+        </div>
+        <div class="nav-item" data-section="autonomy-class" data-demo="demo-autonomy-class">
+          <span class="dot"></span>Autonomy Classification
+        </div>
+        <div class="nav-item" data-section="vocabulary" data-demo="demo-anatomy">
+          <span class="dot"></span>Vocabulary Reference
         </div>
         <div class="nav-item" data-section="smb-trust" data-demo="demo-guardrails">
           <span class="dot"></span>SMB Trust Signals
@@ -1088,39 +1094,133 @@
       </div>
     </div>
 
-    <!-- BREEZE -->
+    <!-- BREEZE / AGENT BUILDER MODEL -->
     <div class="section" id="section-breeze">
       <div class="section-eyebrow">04 — HubSpot Context</div>
-      <div class="section-title">Breeze Studio Concepts</div>
-      <div class="section-lead">Breeze Studio is HubSpot's platform for building agents — currently positioned around customer-facing bots, internal copilots, and automated outreach. Understanding the platform shapes what patterns are feasible.</div>
+      <div class="section-title">Agent Builder Model</div>
+      <div class="section-lead">Agent Builder is a unified workspace (evolved from Workflows + Breeze Studio) where users design, test, deploy, and monitor Automations. "Agent" is not a separate runtime object — it's a classification and market-facing label applied to Automations composed with Reasoning Nodes, Memory, and Tools.</div>
 
-      <h3>Key platform constraints to design around</h3>
+      <div class="callout">
+        <div class="callout-label">Core mental model shift</div>
+        <p><strong>Automation</strong> is the top-level executable object. An Agent is an Automation whose composition includes Reasoning Nodes and is deployed to an interactive Surface. There is one runtime, not two products.</p>
+      </div>
+
+      <h3>The key objects</h3>
       <div class="concept-grid">
         <div class="concept-card">
-          <div class="concept-card-icon">🔗</div>
-          <div class="concept-card-title">CRM-native context</div>
-          <div class="concept-card-desc">Agents have first-class access to contact, deal, and company records. Design for this as the memory layer.</div>
+          <div class="concept-card-icon">⚙️</div>
+          <div class="concept-card-title">Automation</div>
+          <div class="concept-card-desc">Top-level executable. Responds to Triggers, executes a graph of Steps, uses Context and Tools, produces outcomes. All behaviours — deterministic and agentic — are Automations.</div>
         </div>
         <div class="concept-card highlight-orange">
-          <div class="concept-card-icon">⚡</div>
-          <div class="concept-card-title">Workflow as trigger</div>
-          <div class="concept-card-desc">Agents can be wired into existing HubSpot workflow automations — this is the hybrid automation/agent model.</div>
+          <div class="concept-card-icon">🧠</div>
+          <div class="concept-card-title">Reasoning Node</div>
+          <div class="concept-card-desc">A non-deterministic Step where the system interprets goals, determines next actions, and selects Tools within Guardrails. Reasoning Nodes are what make an Automation agentic.</div>
         </div>
         <div class="concept-card highlight-green">
-          <div class="concept-card-icon">🧩</div>
-          <div class="concept-card-title">Copilot surface</div>
-          <div class="concept-card-desc">Agents running in the CRM sidebar — assisting reps in real time rather than acting autonomously.</div>
+          <div class="concept-card-icon">🔗</div>
+          <div class="concept-card-title">Execution Graph</div>
+          <div class="concept-card-desc">The structured representation of an Automation as connected Steps, Conditions, and timing controls. The graph defines behaviour; autonomy emerges from its composition.</div>
         </div>
         <div class="concept-card">
-          <div class="concept-card-icon">🏪</div>
-          <div class="concept-card-title">SMB audience</div>
-          <div class="concept-card-desc">Builders are often non-technical. Prompts, not code. Trust is earned through transparency, not power.</div>
+          <div class="concept-card-icon">📦</div>
+          <div class="concept-card-title">Agent Profile</div>
+          <div class="concept-card-desc">A reusable config layer — goals, instructions, Memory scope, Tool permissions, Guardrails, and Surface — that packages an Automation as a market-facing Agent without a new runtime primitive.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-card-icon">🖥️</div>
+          <div class="concept-card-title">Surface</div>
+          <div class="concept-card-desc">The deployment context where an Automation runs: inbox/chat, helpdesk, CRM panel, background automation. Agents are typically Automations on interactive Surfaces.</div>
+        </div>
+        <div class="concept-card highlight-green">
+          <div class="concept-card-icon">▶️</div>
+          <div class="concept-card-title">Run</div>
+          <div class="concept-card-desc">A single execution instance. Captures inputs, step transitions, tool calls, reasoning traces, and final outputs. The audit unit for Monitoring and Evaluation.</div>
         </div>
       </div>
 
       <hr class="divider">
-      <h3>Design challenge for the team</h3>
-      <p>The hardest problem in Breeze Studio UX is the builder-user gap: the person building the agent and the person using the agent are often different people with different goals, context, and risk tolerance. Design artifacts need to serve both.</p>
+      <h3>The builder-user gap</h3>
+      <p>The person building the Automation and the person using the deployed Agent are often different — with different goals, context, and risk tolerance. Agent Profiles exist partly to bridge this: the builder configures once, the deployed Agent behaves consistently at the Surface.</p>
+    </div>
+
+    <!-- AUTONOMY CLASSIFICATION -->
+    <div class="section" id="section-autonomy-class">
+      <div class="section-eyebrow">04b — HubSpot Context</div>
+      <div class="section-title">Autonomy Classification</div>
+      <div class="section-lead">Autonomy is not a setting — it's a system-derived label based on the composition of the Execution Graph. It's visible in the UI and Monitoring, but never manually set by the builder.</div>
+
+      <div class="concept-grid">
+        <div class="concept-card">
+          <div class="concept-card-icon">🔁</div>
+          <div class="concept-card-title">Deterministic</div>
+          <div class="concept-card-desc">No Reasoning Nodes. Every path is explicit. Predictable, auditable, low-risk. Traditional workflow behaviour.</div>
+        </div>
+        <div class="concept-card highlight-orange">
+          <div class="concept-card-icon">⚖️</div>
+          <div class="concept-card-title">Hybrid</div>
+          <div class="concept-card-desc">Mix of Action Steps and Reasoning Nodes. Deterministic scaffolding with reasoning at specific decision points. Most real-world Automations.</div>
+        </div>
+        <div class="concept-card highlight-green">
+          <div class="concept-card-icon">🧠</div>
+          <div class="concept-card-title">Agentic</div>
+          <div class="concept-card-desc">Reasoning-driven execution with dynamic tool selection and Memory. The agent infers paths; the builder sets goals and constraints.</div>
+        </div>
+      </div>
+
+      <div class="callout green">
+        <div class="callout-label">Why this matters for design</div>
+        <p>Autonomy Classification is structurally honest — it reflects what the Automation actually does, not what the builder intended. This gives Monitoring and Governance a reliable signal, and gives users an accurate trust calibration without requiring them to understand the underlying graph.</p>
+      </div>
+
+      <hr class="divider">
+      <h3>Governance attaches at the right level</h3>
+      <table class="compare-table">
+        <thead><tr><th>Classification</th><th>Primary risk surface</th><th>Governance lever</th></tr></thead>
+        <tbody>
+          <tr><td class="label-col">Deterministic</td><td>Wrong branch logic, stale data</td><td>Test coverage, version control</td></tr>
+          <tr><td class="label-col">Hybrid</td><td>Unexpected reasoning output in known flows</td><td>Reasoning Node guardrails, output assertions</td></tr>
+          <tr><td class="label-col">Agentic</td><td>Unpredictable tool selection, scope creep</td><td>Tool allowlists, Memory scope, max-step limits</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout orange">
+        <div class="callout-label">Design risk</div>
+        <p>Hybrid graphs can become complex without design standards. A graph with Reasoning Nodes scattered throughout becomes hard to reason about or test. Establish patterns for where reasoning lives in a graph.</p>
+      </div>
+    </div>
+
+    <!-- VOCABULARY REFERENCE -->
+    <div class="section" id="section-vocabulary">
+      <div class="section-eyebrow">04c — HubSpot Context</div>
+      <div class="section-title">Vocabulary Reference</div>
+      <div class="section-lead">The shared language for the Agent Builder platform. Precision here reduces ambiguity between builders, PMs, engineers, and end users.</div>
+
+      <table class="compare-table">
+        <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td class="label-col">Automation</td><td>Top-level executable object. Responds to Triggers, runs a graph of Steps, uses Context and Tools, produces outcomes. The single runtime primitive for all deterministic and agentic behaviour.</td></tr>
+          <tr><td class="label-col">Agent</td><td>A system classification and market label — not a separate runtime object. Applied to Automations with Reasoning Nodes deployed to interactive Surfaces.</td></tr>
+          <tr><td class="label-col">Execution Graph</td><td>Structured representation of an Automation as connected Steps, Conditions, and timing controls. Autonomy emerges from its composition.</td></tr>
+          <tr><td class="label-col">Action Step</td><td>A deterministic Step that performs a predefined operation: update record, send communication, invoke integration.</td></tr>
+          <tr><td class="label-col">Reasoning Node</td><td>A non-deterministic Step where the system interprets goals, determines next actions, and selects Tools within Guardrails. Presence determines autonomy classification.</td></tr>
+          <tr><td class="label-col">Condition</td><td>Branching construct that routes execution based on data or outputs from previous Steps.</td></tr>
+          <tr><td class="label-col">Trigger</td><td>Event, schedule, or condition that initiates an Automation: CRM property change, form submission, webhook, conversation event, manual invocation.</td></tr>
+          <tr><td class="label-col">Context</td><td>Structured CRM data and runtime inputs available to a Run: records, properties, associations, conversation history, trigger payload.</td></tr>
+          <tr><td class="label-col">Knowledge Source</td><td>Designated repository of reference material retrievable during execution: CMS content, knowledge base articles, uploaded documents.</td></tr>
+          <tr><td class="label-col">Memory</td><td>Persistent state maintained across Runs, enabling continuity and adaptive behaviour. Scoped per-object, per-conversation, or per-automation. Distinct from standard CRM record storage.</td></tr>
+          <tr><td class="label-col">Human Approval</td><td>A Step type that pauses execution and requires user review before continuing.</td></tr>
+          <tr><td class="label-col">Run</td><td>Single execution instance. Captures inputs, step transitions, tool calls, reasoning traces, and final results. The audit unit.</td></tr>
+          <tr><td class="label-col">Surface</td><td>Deployment context where an Automation operates: inbox/chat, helpdesk, CRM panel, background automation.</td></tr>
+          <tr><td class="label-col">Agent Profile</td><td>Reusable config layer — goals, instructions, Memory scope, Tool permissions, Guardrails, Surface — that packages an Automation as a deployable Agent without introducing a new runtime primitive.</td></tr>
+          <tr><td class="label-col">Evaluation</td><td>Testing and quality measurement for Automations: simulation, replay, assertions, and output grading for Reasoning Nodes.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        <div class="callout-label">Robustness note (score: 9.5/10)</div>
+        <p>This model scores well because <strong>Automation is the single runtime primitive</strong>, autonomy classification is structurally derived rather than manually set, and Agent Profile supports market packaging without object proliferation. The main risk: Memory must be clearly differentiated from standard CRM record storage in the UI, or users will conflate them.</p>
+      </div>
     </div>
 
     <!-- SMB TRUST -->
@@ -1455,6 +1555,87 @@
         </div>
         <div class="annotation">
           <strong>Orange =</strong> partial config. <strong>Red =</strong> not enabled but recommended. Guardrails aren't just safety features — they're a trust surface for the users who manage this agent.
+        </div>
+      </div>
+
+      <!-- BREEZE / AGENT BUILDER DEMO -->
+      <div class="demo-view" id="demo-breeze">
+        <div class="demo-label">Automation → Agent packaging</div>
+        <div class="agent-canvas">
+          <div class="node-board" style="min-height:auto">
+            <div class="node-block node-trigger">
+              <div class="node-header">
+                <span class="node-header-icon">⚙️</span>
+                <span class="node-header-label">Automation</span>
+                <span class="node-type-label">RUNTIME</span>
+              </div>
+              <div class="node-body">Trigger → Execution Graph → Steps → Run</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-action">
+              <div class="node-header">
+                <span class="node-header-icon">🧠</span>
+                <span class="node-header-label">+ Reasoning Nodes + Memory</span>
+                <span class="node-type-label">COMPOSITION</span>
+              </div>
+              <div class="node-body">Autonomy Classification → Agentic</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-condition">
+              <div class="node-header">
+                <span class="node-header-icon">📦</span>
+                <span class="node-header-label">Agent Profile applied</span>
+                <span class="node-type-label">PACKAGING</span>
+              </div>
+              <div class="node-body">Goals · Guardrails · Tool permissions · Surface</div>
+            </div>
+            <div class="connector-line"></div>
+            <div class="node-block node-output">
+              <div class="node-header">
+                <span class="node-header-icon">🖥️</span>
+                <span class="node-header-label">Deployed to Surface</span>
+                <span class="node-type-label">AGENT</span>
+              </div>
+              <div class="node-body">Inbox · CRM Panel · Helpdesk · Background</div>
+            </div>
+          </div>
+        </div>
+        <div class="annotation">
+          <strong>Key insight:</strong> "Agent" is not a different thing — it's an Automation with Reasoning Nodes, packaged via an Agent Profile, deployed to an interactive Surface. One runtime, not two products.
+        </div>
+      </div>
+
+      <!-- AUTONOMY CLASSIFICATION DEMO -->
+      <div class="demo-view" id="demo-autonomy-class">
+        <div class="demo-label">Autonomy derived from graph composition</div>
+        <div class="tool-list">
+          <div class="tool-item">
+            <span class="tool-icon">🔁</span>
+            <div style="flex:1">
+              <div class="tool-name">Deterministic</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Action Steps only · no Reasoning Nodes</div>
+            </div>
+            <span class="tool-permission read">LOW RISK</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-icon">⚖️</span>
+            <div style="flex:1">
+              <div class="tool-name">Hybrid</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Action Steps + Reasoning Nodes mixed</div>
+            </div>
+            <span class="tool-permission write">MANAGED</span>
+          </div>
+          <div class="tool-item">
+            <span class="tool-icon">🧠</span>
+            <div style="flex:1">
+              <div class="tool-name">Agentic</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Reasoning-driven · dynamic tool selection · Memory</div>
+            </div>
+            <span class="tool-permission exec">HIGH TRUST</span>
+          </div>
+        </div>
+        <div class="annotation" style="margin-top:12px">
+          <strong>System-derived, not manually set.</strong> The classification reflects what the Automation actually does — giving Monitoring and users an accurate trust signal without requiring builders to declare it.
         </div>
       </div>
 
